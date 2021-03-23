@@ -1,0 +1,119 @@
+---
+title: "Ejercicio Bomberos Madrid"
+output: html_notebook
+---
+
+ 
+Cargamos las librerías que necesitamos para trabajar
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(readxl)
+```
+
+Leemos el archivo xlsx y posteriormente limpiamos el dataframe para sernos más útil
+
+```{r}
+df <- read.xlsx("ActuacionesBomberos18Actual.xlsx")
+new_df <- subset(df, select = c("AÑO", "MES", "DISTRITO", "FUEGOS", "DAÑOS.EN.CONSTRUCCION", "SALVAMENTOS.Y.RESCATES", "DAÑOS.POR.AGUA", "TOTAL"))
+new_df$DISTRITO <- recode(as.character(new_df$DISTRITO),
+                              "CENTRO" = "CEN",
+                              "ARGANZUELA" = "ARG",
+                              "RETIRO" = "RET",
+                              "SALAMANCA" = "SAL",
+                              "CHAMARTIN" = "CHAMA",
+                              "TETUAN" = "TET",
+                              "CHAMBERI" = "CHAMB",
+                              "FUENCARRAL" = "FUE",
+                              "MONCLOA" = "MON",
+                              "LATINA" = "LAT",
+                              "CARABANCHEL" = "CAR",
+                              "USERA" = "USE",
+                              "PUENTE VALLECAS" = "PV",
+                              "MORATALAZ" = "MOR", 
+                              "CIUDAD LINEAL" = "CL",
+                              "HORTALEZA" = "HOR",
+                              "VILLAVERDE" = "VV",
+                              "VILLA DE VALLECAS" = "VDV",
+                              "VICALVARO" = "VIC",
+                              "SAN BLAS" = "SB",
+                              "BARAJAS" = "BAR",
+                              "FUERA TERMINO MUNICIPAL" = "FTM",
+                              "SIN DISTRITO" = "SD") %>% as.factor()
+```
+
+Gráficos histograma frecuencia riesgos
+
+```{r}
+hist(new_df$FUEGOS)
+hist(new_df$DAÑOS.EN.CONSTRUCCION)
+hist(new_df$SALVAMENTOS.Y.RESCATES)
+hist(new_df$DAÑOS.POR.AGUA)
+hist(new_df$TOTAL)
+```
+
+Gráficos diagrama de cajas sobre riesgos
+
+```{r}
+boxplot(new_df$FUEGOS)
+boxplot(new_df$DAÑOS.EN.CONSTRUCCION)
+boxplot(new_df$SALVAMENTOS.Y.RESCATES)
+boxplot(new_df$DAÑOS.POR.AGUA)
+boxplot(new_df$TOTAL)
+```
+
+Gráficos relación de cada riesgo con su distrito
+
+```{r}
+ggplot(data = new_df, aes(x =DISTRITO, y = FUEGOS)) + geom_col()
+ggplot(data = new_df, aes(x =DISTRITO, y = DAÑOS.EN.CONSTRUCCION)) + geom_col()
+ggplot(data = new_df, aes(x =DISTRITO, y = SALVAMENTOS.Y.RESCATES)) + geom_col()
+ggplot(data = new_df, aes(x =DISTRITO, y = DAÑOS.POR.AGUA)) + geom_col()
+ggplot(data = new_df, aes(x =DISTRITO, y = TOTAL)) + geom_col()
+```
+
+Análisis estadístico
+
+```{r}
+
+freq(new_df$TOTAL, style = "rmarkdown")
+```
+```{r}
+mean(new_df$TOTAL)
+median(new_df$TOTAL)
+var(new_df$TOTAL)
+sd(new_df$TOTAL)
+mediaTOTAL=mean(new_df$TOTAL)
+desTOTAL=sd(new_df$TOTAL)
+CVTOTAL=desTOTAL/mediaTOTAL*100
+CVTOTAL
+```
+
+```{r}
+new_df$TOTAL[new_df$TOTAL >=5] <- 5
+tabla<- table(new_df$TOTAL, new_df$DISTRITO)
+addmargins(tabla)
+tabla<- prop.table(table(new_df$TOTAL, new_df$DISTRITO))
+addmargins(tabla)
+```
+
+
+```{r}
+new_df2 <- subset(new_df, select = c("FUEGOS", "DAÑOS.EN.CONSTRUCCION", "SALVAMENTOS.Y.RESCATES", "DAÑOS.POR.AGUA"))
+RIESGOS<-cor(new_df2)
+RIESGOS
+corrplot(RIESGOS)
+```
+
+```{r}
+t.test(new_df$TOTAL, conf.level=0.95)$conf.int
+t.test(new_df$TOTAL, conf.level=0.90)$conf.int
+```
+
+```{r}
+summary(aov(new_df$TOTAL ~ new_df$DISTRITO))
+```
+
+
+
